@@ -1,17 +1,10 @@
+##
 using DrWatson
 @quickactivate "Skeleton"
 using DataFrames
 
 # Here you may include files from the source directory
 include(srcdir("dummy_src_file.jl"))
-
-println(
-"""
-Currently active project is: $(projectname())
-
-Path of active project: $(projectdir())
-"""
-)
 ##
 a, b = 2, 3
 v = rand(5)
