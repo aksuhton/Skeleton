@@ -23,9 +23,9 @@ if CI
     deploydocs(
         # `repo` MUST be set correctly. Once your GitHub name is set
         # the auto-generated documentation will be hosted at:
-        # https://PutYourGitHubNameHere.github.io/Skeleton/dev/
+        # https://aksuhton.github.io/Skeleton/dev/
         # (assuming you have enabled `gh-pages` deployment)
-        repo = "github.com/PutYourGitHubNameHere/Skeleton.git",
+        repo = "github.com/aksuhton/Skeleton.git",
         target = "build",
         push_preview = true,
         devbranch = "main",
