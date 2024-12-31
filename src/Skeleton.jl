@@ -43,6 +43,6 @@ function makesim(d::Dict)
     return fulld
 end
 ##
-export fakesim, makesim
+export dummy_project_function, fakesim, makesim
 ##
 end #module
