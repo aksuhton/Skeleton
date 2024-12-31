@@ -2,6 +2,7 @@ name = "Skeleton"
 version = "0.0.1"
 
 [deps]
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DrWatson = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
 JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
@@ -18,4 +19,4 @@ Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "Aqua"]
+test = ["Test", "Aqua", "Documenter"]
