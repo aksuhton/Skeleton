@@ -1,3 +1,4 @@
+[![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 # Skeleton
 
 This code base is using the [Julia Language](https://julialang.org/) and
