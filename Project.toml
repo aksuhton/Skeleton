@@ -2,10 +2,10 @@ name = "Skeleton"
 version = "0.0.1"
 
 [deps]
-Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DrWatson = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
 JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 
 [weakdeps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
