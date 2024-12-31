@@ -1,6 +1,6 @@
 CI = get(ENV, "CI", nothing) == "true" || get(ENV, "GITHUB_TOKEN", nothing) !== nothing
 using DrWatson
-@quickactivate "Skeleton"
+@quickactivate :Skeleton
 using Pkg
 Pkg.add("Documenter")
 using Documenter
