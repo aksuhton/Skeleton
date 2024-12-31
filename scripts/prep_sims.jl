@@ -1,10 +1,10 @@
 ##
 using DrWatson
-@quickactivate "Skeleton"
+@quickactivate :Skeleton
 using DataFrames
 
-# Here you may include files from the source directory
-include(srcdir("dummy_src_file.jl"))
+## Here you may include files from the source directory
+# include(srcdir("dummy_src_file.jl"))
 ##
 a, b = 2, 3
 v = rand(5)
