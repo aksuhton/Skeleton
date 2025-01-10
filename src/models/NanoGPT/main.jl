@@ -7,9 +7,11 @@
 using DataDeps
 using OneHotArrays
 using Lux, NNlib, MLUtils
+using Zygote, ComponentArrays
 using Optimisers
-using Random
+using Random, StatsBase
 using Printf
+using JLD2
 using AMDGPU
 ##
 if !haskey(DataDeps.registry, "nanogpt")
@@ -159,11 +161,12 @@ function main(;
     ##
     rng = Random.default_rng()
     Random.seed!(rng, 1234)
-    ##
+    #
     # dev = reactant_device()
-    dev = gpu_device()
+    # dev = gpu_device()
+    dev = cpu_device()
     cdev = cpu_device()
-    ##
+    #
     if inference
         @printf "[Info] Inference mode enabled.\n"
 
@@ -188,52 +191,58 @@ function main(;
 
         return
     end
-    ##
+    #
     # alphabet, trainX, trainY, testX, testY = get_nanogpt_data(; sequence_length, test_split)
     alphabet, trainX, trainY, testX, testY = get_nanogpt_data(
         N_train, N_test; sequence_length, test_split)
-    ##
+    #
     @printf "[Info] Alphabet size: %d\n" length(alphabet)
     @printf "[Info] Training size: %d sequences.\n" size(trainX, 2)
     @printf "[Info] Testing  size: %d sequences.\n\n" size(testX, 2)
-
+    #
     train_loader = DataLoader(
         (trainX, trainY); batchsize, shuffle=true, parallel=true
     ) |> dev
-
+    #
     model_config = (;
         n_vocab=length(alphabet), n_embed, sequence_length, n_hidden,
         n_layers, dropout_rate, n_heads, qk_dim, v_dim
     )
     model = GPT(; model_config...)
-    ps, st = Lux.setup(rng, model) |> dev
+    # ps, st = Lux.setup(rng, model) |> dev
+    ps, st = Lux.setup(rng, model)
+    ps = ComponentArray(ps)
+    ps = ps |> dev
+    st = st |> dev
     @printf "[Info] Number of parameters: %d\n" Lux.parameterlength(ps)
     @printf "[Info] Number of states: %d\n\n" Lux.statelength(st)
-
+    #
     opt = Adam(lr)
     train_state = Training.TrainState(model, ps, st, opt)
-
+    #
     @printf "[Info] Compiling Inference Model...\n"
     testX, testY = (testX, testY) |> dev
     start_time = time()
     # model_compiled = @compile model(testX, ps, Lux.testmode(st))
-    model_compiled = model(testX, ps, Lux.testmode(st))
+    model_compiled = model
     time_to_compile = time() - start_time
     best_test_loss = Inf
-
+    #
     @printf "[Info] Time taken to compile inference model: %0.5fs\n" time_to_compile
     @printf "[Info] Starting Model Training...\n\n"
-
+    #
     loss_fn = CrossEntropyLoss(; logits=Val(true))
-
+    ##
     iter = 0
     for epoch in 1:epochs
+        ##
         for (x, y) in train_loader
             iter += 1
 
             start_time = time()
             _, loss, _, train_state = Training.single_train_step!(
-                AutoEnzyme(), loss_fn, (x, y), train_state
+                # AutoEnzyme(), loss_fn, (x, y), train_state
+                AutoZygote(), loss_fn, (x, y), train_state
             )
             time_taken = time() - start_time
 
@@ -242,10 +251,11 @@ function main(;
                          Iteration %0.5f\n" epoch iter loss time_taken
             end
         end
-
+        ##
         test_loss = loss_fn(
             Array(first(model_compiled(testX, ps, Lux.testmode(st)))), testY
         )
+        ##
         @printf "[Test] Epoch %3d\tTest Loss %.8e\n" epoch test_loss
 
         # Generate some text here...
