@@ -5,7 +5,9 @@
 # using Comonicon: @main
 ##
 using DataDeps
+using OneHotArrays
 using Lux, NNlib, MLUtils
+using Optimisers
 using Random
 using Printf
 using AMDGPU
@@ -149,15 +151,19 @@ function main(;
         # Only inference options
         inference::Bool=false, model_path::String="",
         seed::Union{String, Vector{String}}=["_", "The", "Julia", "Lux.jl"],
-        output_length::Int=1024
+        output_length::Int=1024,
+        # My options
+        N_train = 10,
+        N_test = 2,
 )
+    ##
     rng = Random.default_rng()
     Random.seed!(rng, 1234)
-
+    ##
     # dev = reactant_device()
     dev = gpu_device()
     cdev = cpu_device()
-
+    ##
     if inference
         @printf "[Info] Inference mode enabled.\n"
 
@@ -182,9 +188,10 @@ function main(;
 
         return
     end
-
-    alphabet, trainX, trainY, testX, testY = get_nanogpt_data(; sequence_length, test_split)
-
+    ##
+    # alphabet, trainX, trainY, testX, testY = get_nanogpt_data(; sequence_length, test_split)
+    alphabet, trainX, trainY, testX, testY = get_nanogpt_data(N_train, N_test; sequence_length, test_split)
+    ##
     @printf "[Info] Alphabet size: %d\n" length(alphabet)
     @printf "[Info] Training size: %d sequences.\n" size(trainX, 2)
     @printf "[Info] Testing  size: %d sequences.\n\n" size(testX, 2)
