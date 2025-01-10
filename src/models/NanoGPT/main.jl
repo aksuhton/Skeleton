@@ -153,8 +153,8 @@ function main(;
         seed::Union{String, Vector{String}}=["_", "The", "Julia", "Lux.jl"],
         output_length::Int=1024,
         # My options
-        N_train = 10,
-        N_test = 2,
+        N_train=10,
+        N_test=2
 )
     ##
     rng = Random.default_rng()
@@ -190,7 +190,8 @@ function main(;
     end
     ##
     # alphabet, trainX, trainY, testX, testY = get_nanogpt_data(; sequence_length, test_split)
-    alphabet, trainX, trainY, testX, testY = get_nanogpt_data(N_train, N_test; sequence_length, test_split)
+    alphabet, trainX, trainY, testX, testY = get_nanogpt_data(
+        N_train, N_test; sequence_length, test_split)
     ##
     @printf "[Info] Alphabet size: %d\n" length(alphabet)
     @printf "[Info] Training size: %d sequences.\n" size(trainX, 2)
