@@ -1,9 +1,15 @@
-# Taken from https://github.com/FluxML/model-zoo/pull/410
-using MLUtils, Lux, Random, Optimisers, Printf, Statistics, NNlib, DataDeps, StatsBase,
-      OneHotArrays, JLD2
-using Reactant, Enzyme
-using Comonicon: @main
-
+## Taken from https://github.com/FluxML/model-zoo/pull/410
+# using MLUtils, Lux, Random, Optimisers, Printf, Statistics, NNlib, DataDeps, StatsBase,
+#       OneHotArrays, JLD2
+# using Reactant, Enzyme
+# using Comonicon: @main
+##
+using DataDeps
+using Lux, NNlib, MLUtils
+using Random
+using Printf
+using AMDGPU
+##
 if !haskey(DataDeps.registry, "nanogpt")
     register(DataDep(
         "nanogpt",
@@ -12,7 +18,7 @@ if !haskey(DataDeps.registry, "nanogpt")
         "59a0ad62833b2e15ec811c548618876359e902717431236e52699a0e2bc253ca"
     ))
 end
-
+##
 function gpt_block(; n_embed, n_hidden, qk_dim, v_dim, n_heads, dropout_rate)
     @assert qk_dim % n_heads == 0
     @assert v_dim % n_heads == 0
@@ -42,7 +48,7 @@ function gpt_block(; n_embed, n_hidden, qk_dim, v_dim, n_heads, dropout_rate)
         @return x
     end
 end
-
+##
 function GPT(;
         n_vocab, n_embed, sequence_length, n_hidden,
         n_layers, dropout_rate, n_heads, qk_dim, v_dim
@@ -61,14 +67,13 @@ function GPT(;
         @return output_layer(ln(x))
     end
 end
-
-# Use the model to generate some text.
+## Use the model to generate some text.
 function generate_text(
         model, ps, st, seed; alphabet, output_length, sequence_length
 )
     dev = get_device((ps, st))
-    @assert !(dev isa ReactantDevice) "Currently we don't support running inference of \
-                                       dynamically sized tensors."
+    # @assert !(dev isa ReactantDevice) "Currently we don't support running inference of \
+    #                                    dynamically sized tensors."
 
     seed = copy(seed)
     seed_len = maximum(length, seed)
@@ -102,8 +107,7 @@ function generate_text(
 
     return res
 end
-
-# Load data from input file, and partition into training and testing subsets.
+## Load data from input file, and partition into training and testing subsets.
 function get_nanogpt_data(; sequence_length, test_split)
     data_file = joinpath(datadep"nanogpt", "shakespeare_input.txt")
     text = String(read(data_file))
@@ -135,8 +139,9 @@ function get_nanogpt_data(; sequence_length, test_split)
 
     return alphabet, Array(trainX), Array(trainY), Array(testX), Array(testY)
 end
-
-@main function main(;
+##
+# @main function main(;
+function main(;
         n_embed::Int=64, n_hidden::Int=256, n_heads::Int=4, qk_dim::Int=16,
         v_dim::Int=16, n_layers::Int=6, sequence_length::Int=64, batchsize::Int=128,
         dropout_rate::Float32=0.0f0, test_split::Float64=0.1, lr::Float64=1e-2,
@@ -149,7 +154,8 @@ end
     rng = Random.default_rng()
     Random.seed!(rng, 1234)
 
-    dev = reactant_device()
+    # dev = reactant_device()
+    dev = gpu_device()
     cdev = cpu_device()
 
     if inference
@@ -202,7 +208,8 @@ end
     @printf "[Info] Compiling Inference Model...\n"
     testX, testY = (testX, testY) |> dev
     start_time = time()
-    model_compiled = @compile model(testX, ps, Lux.testmode(st))
+    # model_compiled = @compile model(testX, ps, Lux.testmode(st))
+    model_compiled = model(testX, ps, Lux.testmode(st))
     time_to_compile = time() - start_time
     best_test_loss = Inf
 
